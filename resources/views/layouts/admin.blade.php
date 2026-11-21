@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Admin Panel — KAWARA')</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/logoKawara.svg') }}">
     <link rel="stylesheet" href="{{ asset('css/portal.css') }}">
 </head>
 <body>
     <nav class="admin-nav">
         <div class="container admin-nav-inner">
             <a href="{{ route('admin.dashboard') }}" class="admin-brand">
-                KAWARA<span>.</span> Admin
+                <img src="{{ asset('images/logoKawara.svg') }}" alt="KAWARA" class="admin-logo">
+                <span class="admin-brand-tag">Admin</span>
             </a>
             <div class="admin-nav-links">
                 <a href="{{ route('admin.dashboard') }}" class="admin-ribbon-link">Dashboard</a>
