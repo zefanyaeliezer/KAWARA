@@ -38,6 +38,16 @@ class NewsPortalTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Peluncuran Portal Berita KAWARA');
+        $response->assertSee('Merekam kabar, menyuarakan cerita.');
+        $response->assertSee('MEDIA INFORMASI LOKAL KARAWANG');
+        $response->assertSee('Jelajahi Kawara');
+        $response->assertSee('Ekonomi');
+        $response->assertSee('Pemerintahan');
+        $response->assertSee('Wisata &amp; Lingkungan', false);
+        $response->assertSee('Sosial');
+        $response->assertSee('Pendidikan');
+        $response->assertSee('https://www.instagram.com/kawara_updates?lqvp=MzFneDBzY2hlYms2', false);
+        $response->assertSee('https://whatsapp.com/channel/0029Vb9QkUuBadmdn7ndp220', false);
         $response->assertDontSee('/admin/login');
         $response->assertDontSee('Mode Admin');
 
