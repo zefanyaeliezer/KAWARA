@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 
 // Public News Portal (Default: Guest)
 Route::get('/', [NewsController::class, 'index'])->name('news.index');
+Route::get('/berita/{news:slug}/thumbnail', [NewsController::class, 'thumbnail'])->name('news.thumbnail');
 Route::get('/berita/{news:slug}', [NewsController::class, 'show'])->name('news.show');
 
 // Hidden Direct Admin Login (Cara 1)

@@ -26,7 +26,13 @@ class News extends Model
         'excerpt',
         'content',
         'thumbnail',
+        'thumbnail_data',
+        'thumbnail_mime',
         'published_at',
+    ];
+
+    protected $hidden = [
+        'thumbnail_data',
     ];
 
     protected function casts(): array
@@ -47,8 +53,33 @@ class News extends Model
             ->where('published_at', '<=', now());
     }
 
+    public function scopeWithoutThumbnailData(Builder $query): Builder
+    {
+        return $query->select([
+            'id',
+            'user_id',
+            'title',
+            'slug',
+            'category',
+            'excerpt',
+            'content',
+            'thumbnail',
+            'thumbnail_mime',
+            'published_at',
+            'created_at',
+            'updated_at',
+        ]);
+    }
+
     public function getThumbnailUrlAttribute(): ?string
     {
+        if (filled($this->thumbnail_mime)) {
+            return route('news.thumbnail', [
+                'news' => $this->slug,
+                'v' => $this->updated_at?->timestamp ?? 1,
+            ]);
+        }
+
         if (! $this->thumbnail) {
             return null;
         }
