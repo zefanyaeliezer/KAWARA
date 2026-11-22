@@ -15,6 +15,7 @@ class NewsController extends Controller
     public function index(): View
     {
         $newsList = News::query()
+            ->withoutThumbnailData()
             ->with('author')
             ->latest('published_at')
             ->latest('id')
@@ -56,9 +57,13 @@ class NewsController extends Controller
             'thumbnail.max' => 'Ukuran gambar maksimal 2 MB.',
         ]);
 
-        $thumbnailPath = null;
+        $thumbnailData = null;
+        $thumbnailMime = null;
+
         if ($request->hasFile('thumbnail')) {
-            $thumbnailPath = $request->file('thumbnail')->store('thumbnails', 'public');
+            $file = $request->file('thumbnail');
+            $thumbnailData = base64_encode(file_get_contents($file->getRealPath()));
+            $thumbnailMime = $file->getMimeType() ?: 'image/jpeg';
         }
 
         News::create([
@@ -68,7 +73,9 @@ class NewsController extends Controller
             'category' => $validated['category'],
             'excerpt' => $validated['excerpt'] ?? null,
             'content' => $validated['content'],
-            'thumbnail' => $thumbnailPath,
+            'thumbnail' => null,
+            'thumbnail_data' => $thumbnailData,
+            'thumbnail_mime' => $thumbnailMime,
             'published_at' => now(),
         ]);
 
@@ -104,17 +111,26 @@ class NewsController extends Controller
         ]);
 
         $thumbnailPath = $news->thumbnail;
+        $thumbnailData = $news->thumbnail_data;
+        $thumbnailMime = $news->thumbnail_mime;
 
-        if ($request->boolean('remove_thumbnail') && $thumbnailPath) {
-            Storage::disk('public')->delete($thumbnailPath);
+        if ($request->boolean('remove_thumbnail')) {
+            if ($thumbnailPath) {
+                Storage::disk('public')->delete($thumbnailPath);
+            }
             $thumbnailPath = null;
+            $thumbnailData = null;
+            $thumbnailMime = null;
         }
 
         if ($request->hasFile('thumbnail')) {
             if ($thumbnailPath) {
                 Storage::disk('public')->delete($thumbnailPath);
+                $thumbnailPath = null;
             }
-            $thumbnailPath = $request->file('thumbnail')->store('thumbnails', 'public');
+            $file = $request->file('thumbnail');
+            $thumbnailData = base64_encode(file_get_contents($file->getRealPath()));
+            $thumbnailMime = $file->getMimeType() ?: 'image/jpeg';
         }
 
         $slug = $news->title !== $validated['title']
@@ -128,6 +144,8 @@ class NewsController extends Controller
             'excerpt' => $validated['excerpt'] ?? null,
             'content' => $validated['content'],
             'thumbnail' => $thumbnailPath,
+            'thumbnail_data' => $thumbnailData,
+            'thumbnail_mime' => $thumbnailMime,
         ]);
 
         return redirect()

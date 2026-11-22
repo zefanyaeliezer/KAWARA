@@ -122,18 +122,30 @@ class NewsPortalTest extends TestCase
 
         $news = News::firstOrFail();
         $this->assertSame('inovasi-wisata-ramah-lingkungan-2026', $news->slug);
-        $this->assertNotNull($news->thumbnail);
-        Storage::disk('public')->assertExists($news->thumbnail);
+        $this->assertNull($news->thumbnail);
+        $this->assertSame('image/png', $news->thumbnail_mime);
+        $this->assertSame(base64_encode($tinyPng), $news->thumbnail_data);
 
-        // Update news
+        // Verify thumbnail is served directly from database
+        $thumbnailResponse = $this->get(route('news.thumbnail', $news->slug));
+        $thumbnailResponse->assertOk();
+        $thumbnailResponse->assertHeader('Content-Type', 'image/png');
+        $this->assertSame($tinyPng, $thumbnailResponse->getContent());
+
+        // Update news & remove thumbnail
         $updateResponse = $this->put(route('admin.news.update', $news), [
             'title' => 'Pertumbuhan Ekonomi Daerah 2026',
             'category' => 'EKONOMI',
             'excerpt' => 'Ringkasan terbaru.',
             'content' => 'Isi berita yang telah diperbarui.',
+            'remove_thumbnail' => '1',
         ]);
 
         $updateResponse->assertRedirect('/admin/dashboard');
+        $news->refresh();
+        $this->assertNull($news->thumbnail_data);
+        $this->assertNull($news->thumbnail_mime);
+        $this->get(route('news.thumbnail', $news->slug))->assertNotFound();
         $this->assertDatabaseHas('news', [
             'id' => $news->id,
             'title' => 'Pertumbuhan Ekonomi Daerah 2026',
